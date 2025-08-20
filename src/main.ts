@@ -172,52 +172,85 @@ import { Map } from "./map";
     if (world.y < minY) world.y = minY;
     if (world.y > maxY) world.y = maxY;
   }
-  const addWeather = async (src: string, speed = 3) => {
+
+  const addWeather = async (
+    src: string,
+    speed = 3,
+    options?: { isTornado?: boolean },
+  ) => {
     const weatherTex = await Assets.load(src);
 
-    const weather = new TilingSprite({
-      texture: weatherTex,
-      width: weatherTex.width,
-      height: app.renderer.height,
-    });
+    const count = options?.isTornado ? 1 : 1;
 
-    // Escala X aleatoria (mínimo = 1, máximo = llenar pantalla)
-    const minScale = 1;
-    const maxScale = 3;
-    const randomScale = minScale + Math.random() * (maxScale - minScale);
-    weather.scale.x = randomScale;
+    for (let i = 0; i < count; i++) {
+      const weather = new TilingSprite({
+        texture: weatherTex,
+        width: weatherTex.width,
+        height: app.renderer.height,
+      });
 
-    // Posición X aleatoria dentro de los límites
-    weather.x =
-      Math.random() * (app.renderer.width - weather.width * weather.scale.x);
+      // Escala X inicial aleatoria
+      const minScale = 1;
+      const maxScale = 3;
+      const randomScale = minScale + Math.random() * (maxScale - minScale);
+      weather.scale.x = randomScale;
 
-    app.stage.addChild(weather);
+      // 🔑 Centrar el pivot en el medio para que el flip no mueva el sprite
+      weather.pivot.set(weather.width / 2, 0);
 
-    window.addEventListener("resize", () => {
-      weather.height = app.renderer.height;
-
-      // Recalcular escala máxima según nuevo tamaño de ventana
-      const newMaxScale = app.renderer.width / weatherTex.width;
-      const newRandomScale =
-        minScale + Math.random() * (newMaxScale - minScale);
-      weather.scale.x = newRandomScale;
-
-      // Ajustar X aleatoria
+      // Ajustar la posición X
       weather.x =
-        Math.random() * (app.renderer.width - weather.width * weather.scale.x);
-    });
+        Math.random() * (app.renderer.width - weather.width * randomScale) +
+        weather.width / 2;
 
-    app.ticker.add(() => {
-      weather.tilePosition.y -= speed;
-    });
+      app.stage.addChild(weather);
+
+      // Ajustar al resize
+      window.addEventListener("resize", () => {
+        weather.height = app.renderer.height;
+        const newMaxScale = app.renderer.width / weatherTex.width;
+        const newRandomScale =
+          minScale + Math.random() * (newMaxScale - minScale);
+        weather.scale.x = Math.sign(weather.scale.x) * newRandomScale;
+
+        weather.x =
+          Math.random() *
+            (app.renderer.width - weather.width * newRandomScale) +
+          weather.width / 2;
+      });
+
+      // Movimiento hacia arriba
+      app.ticker.add(() => {
+        weather.tilePosition.y -= speed;
+      });
+
+      // 🔄 Flip automático (invertir cada segundo)
+      if (options?.isTornado) {
+        let flip = false;
+        setInterval(() => {
+          flip = !flip;
+          weather.scale.x = Math.abs(weather.scale.x) * (flip ? -1 : 1);
+        }, 120);
+      }
+    }
   };
 
-  addWeather("/assets/Random.png");
-  addWeather("/assets/Tornado.png", 15);
-  addWeather("/assets/Force.png", 2);
-  addWeather("/assets/Electricity.png");
-  addWeather("/assets/Weakness.png");
-  addWeather("/assets/Mirror.png");
+  // Uso
+  // addWeather("/assets/Random.png");
+  // addWeather("/assets/Tornado.png", 0.5, { isTornado: true });
+  const randomNumbers = [1, 2, 3];
+
+  const randomLimit =
+    randomNumbers[Math.floor(Math.random() * randomNumbers.length)];
+
+  for (let i = 0; i < randomLimit; i++) {
+    addWeather("/assets/Tornado.png", 0.5, { isTornado: true });
+  }
+
+  // addWeather("/assets/Force.png", 2);
+  // addWeather("/assets/Electricity.png");
+  // addWeather("/assets/Weakness.png");
+  // addWeather("/assets/Mirror.png");
 
   clampCamera();
 })();
