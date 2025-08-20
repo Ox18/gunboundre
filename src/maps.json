@@ -1,0 +1,19 @@
+[
+  {
+    "id": 0,
+    "name": "Metamine",
+    "color": "brown",
+    "bg": "/assets/Maps/Metamine/Background.png",
+    "w": 780,
+    "h": 111,
+    "animations": [
+      {
+        "source": "/assets/Maps/Metamine/Background.png",
+        "x": 638,
+        "y": 302,
+        "rows": 15,
+        "frames": 15
+      }
+    ]
+  }
+]
