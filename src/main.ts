@@ -49,7 +49,7 @@ import { Map } from "./map";
 
   // Cargar base texture para animación
   const baseTex = await Assets.load(
-    "/assets/Maps/Metamine/BackgroundAnimation1.png"
+    "/assets/Maps/Metamine/BackgroundAnimation1.png",
   );
 
   console.log(Map.create(0));
@@ -64,7 +64,7 @@ import { Map } from "./map";
           sourceSize: { w: 52, h: 111 },
           spriteSourceSize: { x: 0, y: 0, w: 52, h: 111 },
         },
-      ])
+      ]),
     ),
     meta: {
       image: "/assets/Maps/Metamine/Background.png",
