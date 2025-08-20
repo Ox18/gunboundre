@@ -7,114 +7,65 @@ import {
   Spritesheet,
   AnimatedSprite,
   BindableTexture,
+  TilingSprite,
 } from "pixi.js";
 
 import { Map } from "./map";
 
 (async () => {
+  // Crear aplicación a pantalla completa (canvas ocupa toda la ventana)
   const app = new Application();
   await app.init({
     backgroundColor: "brown",
-    width: 1200,
-    height: 900,
+    resizeTo: window, // 👈 canvas siempre del tamaño de la ventana
   });
+  document.body.style.margin = "0"; // quitar scroll del navegador
   document.body.appendChild(app.canvas);
 
   // Fondo
   const bgTexture = await Assets.load("/assets/Maps/Metamine/Background.png");
 
   const world = new Container({ isRenderGroup: true });
-  world.addChild(new Sprite({ texture: bgTexture }));
-  const worldWidth = bgTexture.width;
-  const worldHeight = bgTexture.height;
+
+  // const tornadoTex = await Assets.load("/assets/Tornado.png");
+
   app.stage.addChild(world);
+
+  // Sprite del fondo
+  const bgSprite = new Sprite({ texture: bgTexture });
+  world.addChild(bgSprite);
+
+  // Ajustar fondo al tamaño de la pantalla
+  function resizeBackground() {
+    const scaleX = app.renderer.width / bgTexture.width;
+    const scaleY = app.renderer.height / bgTexture.height;
+    const scale = Math.max(scaleX, scaleY); // cubrir toda la pantalla
+    bgSprite.scale.set(scale);
+    clampCamera(); // 👈 volver a limitar cámara en cada resize
+  }
+
+  resizeBackground();
+  window.addEventListener("resize", resizeBackground);
 
   // Cargar base texture para animación
   const baseTex = await Assets.load(
-    "/assets/Maps/Metamine/BackgroundAnimation1.png",
+    "/assets/Maps/Metamine/BackgroundAnimation1.png"
   );
 
   console.log(Map.create(0));
 
   // Definir atlasData manualmente
   const atlasData = {
-    frames: {
-      frame0: {
-        frame: { x: 0, y: 0, w: 52, h: 111 },
-        sourceSize: { w: 52, h: 111 },
-        spriteSourceSize: { x: 0, y: 0, w: 52, h: 111 },
-      },
-      frame1: {
-        frame: { x: 52, y: 0, w: 52, h: 111 },
-        sourceSize: { w: 52, h: 111 },
-        spriteSourceSize: { x: 0, y: 0, w: 52, h: 111 },
-      },
-      frame2: {
-        frame: { x: 104, y: 0, w: 52, h: 111 },
-        sourceSize: { w: 52, h: 111 },
-        spriteSourceSize: { x: 0, y: 0, w: 52, h: 111 },
-      },
-      frame3: {
-        frame: { x: 156, y: 0, w: 52, h: 111 },
-        sourceSize: { w: 52, h: 111 },
-        spriteSourceSize: { x: 0, y: 0, w: 52, h: 111 },
-      },
-      frame4: {
-        frame: { x: 208, y: 0, w: 52, h: 111 },
-        sourceSize: { w: 52, h: 111 },
-        spriteSourceSize: { x: 0, y: 0, w: 52, h: 111 },
-      },
-      frame5: {
-        frame: { x: 260, y: 0, w: 52, h: 111 },
-        sourceSize: { w: 52, h: 111 },
-        spriteSourceSize: { x: 0, y: 0, w: 52, h: 111 },
-      },
-      frame6: {
-        frame: { x: 312, y: 0, w: 52, h: 111 },
-        sourceSize: { w: 52, h: 111 },
-        spriteSourceSize: { x: 0, y: 0, w: 52, h: 111 },
-      },
-      frame7: {
-        frame: { x: 364, y: 0, w: 52, h: 111 },
-        sourceSize: { w: 52, h: 111 },
-        spriteSourceSize: { x: 0, y: 0, w: 52, h: 111 },
-      },
-      frame8: {
-        frame: { x: 416, y: 0, w: 52, h: 111 },
-        sourceSize: { w: 52, h: 111 },
-        spriteSourceSize: { x: 0, y: 0, w: 52, h: 111 },
-      },
-      frame9: {
-        frame: { x: 468, y: 0, w: 52, h: 111 },
-        sourceSize: { w: 52, h: 111 },
-        spriteSourceSize: { x: 0, y: 0, w: 52, h: 111 },
-      },
-      frame10: {
-        frame: { x: 520, y: 0, w: 52, h: 111 },
-        sourceSize: { w: 52, h: 111 },
-        spriteSourceSize: { x: 0, y: 0, w: 52, h: 111 },
-      },
-      frame11: {
-        frame: { x: 572, y: 0, w: 52, h: 111 },
-        sourceSize: { w: 52, h: 111 },
-        spriteSourceSize: { x: 0, y: 0, w: 52, h: 111 },
-      },
-      frame12: {
-        frame: { x: 624, y: 0, w: 52, h: 111 },
-        sourceSize: { w: 52, h: 111 },
-        spriteSourceSize: { x: 0, y: 0, w: 52, h: 111 },
-      },
-      frame13: {
-        frame: { x: 676, y: 0, w: 52, h: 111 },
-        sourceSize: { w: 52, h: 111 },
-        spriteSourceSize: { x: 0, y: 0, w: 52, h: 111 },
-      },
-      frame14: {
-        frame: { x: 728, y: 0, w: 52, h: 111 },
-        sourceSize: { w: 52, h: 111 },
-        spriteSourceSize: { x: 0, y: 0, w: 52, h: 111 },
-      },
-    },
+    frames: Object.fromEntries(
+      Array.from({ length: 15 }, (_, i) => [
+        `frame${i}`,
+        {
+          frame: { x: i * 52, y: 0, w: 52, h: 111 },
+          sourceSize: { w: 52, h: 111 },
+          spriteSourceSize: { x: 0, y: 0, w: 52, h: 111 },
+        },
+      ])
+    ),
     meta: {
       image: "/assets/Maps/Metamine/Background.png",
       format: "RGBA8888",
@@ -122,7 +73,7 @@ import { Map } from "./map";
       scale: 1,
     },
     animations: {
-      anim: Object.keys(Array.from({ length: 15 })).map((_, i) => `frame${i}`),
+      anim: Array.from({ length: 15 }, (_, i) => `frame${i}`),
     },
   };
 
@@ -132,12 +83,11 @@ import { Map } from "./map";
 
   // Crear AnimatedSprite
   const animSprite = new AnimatedSprite(spritesheet.animations.anim);
-  animSprite.x = 638;
-  animSprite.y = 302;
+  animSprite.x = app.renderer.width / 2;
+  animSprite.y = app.renderer.height / 2;
   animSprite.anchor.set(0.5);
   animSprite.animationSpeed = 0.2;
   animSprite.play();
-
   world.addChild(animSprite);
 
   // Texto posición
@@ -204,18 +154,70 @@ import { Map } from "./map";
     }
   });
 
+  // 🚨 Límite de la cámara: no dejar ver más allá del fondo
   function clampCamera() {
     const screenW = app.renderer.width;
     const screenH = app.renderer.height;
-    const minX = Math.min(0, screenW - worldWidth);
+
+    const scaledW = bgTexture.width * bgSprite.scale.x;
+    const scaledH = bgTexture.height * bgSprite.scale.y;
+
+    const minX = Math.min(0, screenW - scaledW);
     const maxX = 0;
-    const minY = Math.min(0, screenH - worldHeight);
+    const minY = Math.min(0, screenH - scaledH);
     const maxY = 0;
+
     if (world.x < minX) world.x = minX;
     if (world.x > maxX) world.x = maxX;
     if (world.y < minY) world.y = minY;
     if (world.y > maxY) world.y = maxY;
   }
+  const addWeather = async (src: string, speed = 3) => {
+    const weatherTex = await Assets.load(src);
+
+    const weather = new TilingSprite({
+      texture: weatherTex,
+      width: weatherTex.width,
+      height: app.renderer.height,
+    });
+
+    // Escala X aleatoria (mínimo = 1, máximo = llenar pantalla)
+    const minScale = 1;
+    const maxScale = 3;
+    const randomScale = minScale + Math.random() * (maxScale - minScale);
+    weather.scale.x = randomScale;
+
+    // Posición X aleatoria dentro de los límites
+    weather.x =
+      Math.random() * (app.renderer.width - weather.width * weather.scale.x);
+
+    app.stage.addChild(weather);
+
+    window.addEventListener("resize", () => {
+      weather.height = app.renderer.height;
+
+      // Recalcular escala máxima según nuevo tamaño de ventana
+      const newMaxScale = app.renderer.width / weatherTex.width;
+      const newRandomScale =
+        minScale + Math.random() * (newMaxScale - minScale);
+      weather.scale.x = newRandomScale;
+
+      // Ajustar X aleatoria
+      weather.x =
+        Math.random() * (app.renderer.width - weather.width * weather.scale.x);
+    });
+
+    app.ticker.add(() => {
+      weather.tilePosition.y -= speed;
+    });
+  };
+
+  addWeather("/assets/Random.png");
+  addWeather("/assets/Tornado.png", 15);
+  addWeather("/assets/Force.png", 2);
+  addWeather("/assets/Electricity.png");
+  addWeather("/assets/Weakness.png");
+  addWeather("/assets/Mirror.png");
 
   clampCamera();
 })();
